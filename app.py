@@ -10,8 +10,12 @@ nlp.add_pipe(pii, last=True)
 
 @app.route('/mask', methods=['POST'])
 def mask_text():
-    data = request.json
-    text = data.get("text", "")
+    """Mask personal information in the provided text."""
+    data = request.get_json(force=True, silent=True) or {}
+    text = data.get("text")
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+
     doc = nlp(text)
     masked = doc._.pii_dump(mode="replace")
     return jsonify({"masked_text": masked})
